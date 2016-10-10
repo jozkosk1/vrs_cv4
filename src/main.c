@@ -48,6 +48,13 @@ void adc_init(void)
  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
  GPIO_Init(GPIOA, &GPIO_InitStructure);
+ GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_5;
+ GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+ GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+ GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+ GPIO_InitStructure.GPIO_Speed = GPIO_Speed_40MHz;
+
+ 	GPIO_Init (GPIOA, &GPIO_InitStructure);
 /* Enable the HSI oscillator */
  RCC_HSICmd(ENABLE);
 /* Check that HSI oscillator is ready */
@@ -76,7 +83,25 @@ void adc_init(void)
  ADC_SoftwareStartConv(ADC1);
 
 }
-
+int cyklus(int adc)
+{
+	if ((adc>3900)&&(adc<3980))
+		return 100000;
+	if ((adc>1950)&&(adc<2080))
+			return 500000;
+	if ((adc>2850)&&(adc<3020))
+			return 1000000;
+	if ((adc>3400)&&(adc<3500))
+			return 3000000;
+	if ((adc>3600)&&(adc<3700))
+			return 6000000;
+}
+void blikanie(int i)
+{
+	int j;
+	GPIO_ToggleBits(GPIOA, GPIO_Pin_5);
+	for(j=0;j<i;j++){}
+}
 /* Private functions */
 
 
@@ -119,9 +144,12 @@ int main(void)
   while (1)
   {
 	  /* Start ADC Software Conversion */
+	  int i;
 	   ADC_SoftwareStartConv(ADC1);
 	   while(!ADC_GetFlagStatus(ADC, ADC_FLAG_EOC)){}
-	   number = ADC_GetConversionValue(ADC1);
+	   number = ADC_GetConversionValue(ADC1); //citanie a hodnnoty
+	   i = cyklus(number);
+	   blikanie(i);
   }
   return 0;
 }
